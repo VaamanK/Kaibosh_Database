@@ -1,25 +1,26 @@
 body {
     width: 100%;
-    background-color: navajowhite;
-    color: #9E4F53;
+    background-color: #90C67C;
+    color: #E1EEBC;
     font-family: 'Tahoma' , sans-serif;
+    font-size: 15px;
     margin: auto;
 }
 
-header, footer {
-    color: white;
+header {
+    color: #E1EEBC;
     text-align: center;
 }
 
 nav {
   overflow: hidden;
-  background-color: mediumaquamarine;
+  background-color: #328E6E;
 }
 
 nav a {
     float: left;
     display: block;
-    color: #8A6D3B;
+    color: #E1EEBC;
     text-align: center;
     padding: 14px 16px;
     text-decoration: none;
@@ -40,8 +41,16 @@ nav input[type=text] {
 }
 
 main {
-    background-color: #EBE9A4;
-    padding: 100px;
+    background-color: #67AE6E;
+    padding: 20px;
+}
+
+h2 {
+    font-size: 2rem;
+    text-align: center;
+    margin: 0 0 0.5rem 0;
+    padding-top: 20px;
+    color: #E1EEBC;
 }
 
 table {
