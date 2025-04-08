@@ -1,5 +1,60 @@
-body{
-background-color: #65FE08;
+body {
+    width: 100%;
+    background-color: navajowhite;
+    color: #9E4F53;
+    font-family: 'Tahoma' , sans-serif;
+    margin: auto;
 }
-.header {
+
+header, footer {
+    color: white;
+    text-align: center;
+}
+
+nav {
+  overflow: hidden;
+  background-color: mediumaquamarine;
+}
+
+nav a {
+    float: left;
+    display: block;
+    color: #8A6D3B;
+    text-align: center;
+    padding: 14px 16px;
+    text-decoration: none;
+    font-size: 17px;
+}
+
+nav a:hover {
+    background-color: #ddd;
+    color: black;
+}
+
+nav input[type=text] {
+    float: right;
+    padding: 6px;
+    border: none;
+    margin-right: 16px;
+    font-size: 17px;
+}
+
+main {
+    background-color: #EBE9A4;
+    padding: 100px;
+}
+
+table {
+    border: 2px solid black;
+    border-collapse: collapse;
+    width: 90%;
+    margin: auto;
+}
+
+input{
+    border: 3px solid lightgrey;
+    padding: 5px;
+    margin: 5px;
+    background-color: lightgrey;
+    border-radius: 20px;
 }
