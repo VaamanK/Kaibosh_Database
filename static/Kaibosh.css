@@ -1,14 +1,13 @@
 body {
     width: 100%;
     background-color: #90C67C;
-    color: #E1EEBC;
+    color: #328E6E;
     font-family: 'Tahoma' , sans-serif;
     margin: auto;
 }
 
-header {
-    color: #E1EEBC;
-    text-align: center;
+main {
+    color: #328E6E;
 }
 
 nav {
@@ -39,14 +38,13 @@ nav input[type=text] {
     font-size: 17px;
 }
 
-main {
+header {
     background-color: #67AE6E;
     padding: 20px;
 }
 
 h2 {
     font-size: 2rem;
-    text-align: center;
     margin: 0 0 0.5rem 0;
     padding-top: 20px;
     color: #E1EEBC;
@@ -65,4 +63,63 @@ input{
     margin: 5px;
     background-color: lightgrey;
     border-radius: 20px;
+}
+
+.kaibosh-container {
+  background-color: #132c13;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 0 20px rgba(0, 255, 0, 0.15);
+  width: 100%;
+  max-width: 400px;
+}
+
+.kaibosh-container h2 {
+  color: #c5ecc5;
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.kaibosh-input {
+  width: 100%;
+  padding: 0.75rem;
+  margin: 0.5rem 0;
+  background-color: #1d3a1d;
+  border: 1px solid #2e5c2e;
+  border-radius: 8px;
+  color: #e5ffe5;
+}
+
+.kaibosh-input::placeholder {
+  color: #94b894;
+}
+
+.kaibosh-button {
+  width: 100%;
+  padding: 0.75rem;
+  background-color: #2e8b57;
+  border: none;
+  border-radius: 8px;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  margin-top: 1rem;
+  transition: background-color 0.3s ease;
+}
+
+.kaibosh-button:hover {
+  background-color: #3da96d;
+}
+
+.kaibosh-link {
+  display: block;
+  text-align: center;
+  color: #7dfc9b;
+  margin-top: 1rem;
+  text-decoration: none;
+  font-size: 0.9rem;
+}
+
+.kaibosh-link:hover {
+  text-decoration: underline;
 }

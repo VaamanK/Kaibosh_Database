@@ -10,21 +10,17 @@
 </head>
 
 <nav>
-    <header>
-        <a href="/">Home</a>
-        <a href="/input">Collections</a>
-        <a href="/sort">Sorts</a>
-        <a href="/output">Donations</a>
-    </header>
+    <a href="/">Home</a>
+    <a href="/input">Collections</a>
+    <a href="/login">Login</a>
+    <a href="/sort">Sorts</a>
+    <a href="/output">Donations</a>
 </nav>
 
-<main>
-    {% block main %}
-    {% endblock %}
-</main>
+{% block pageheading %}{% endblock %}
 
-<header>
-    <h2>{% block pageheading %}{% endblock %}</h2>
-</header>
+{% block main %}{% endblock %}
+
+
 
 </html>
