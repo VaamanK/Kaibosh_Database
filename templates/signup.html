@@ -1,14 +1,20 @@
 {% extends "base.html" %}
 
+{% block pageheading %}Login{% endblock %}
+
 {% block main %}
-    Welcome to Kaibosh home page.
+    <form method="post"
+        <div class="kaibosh-container">
+            <h2> Signup</h2>
+            <input type="text" class="kaibosh-input" placeholder="First Name" name="volunteer_fname" required />
+            <input type="text" class="kaibosh-input" placeholder="Last Name" name="volunteer_lname" required />
+            <input type="email" class="kaibosh-input" placeholder="Email" name="volunteer_email" required />
+            <input type="password" class="kaibosh-input" placeholder="Password must be 8 characters" name="volunteer_password" required />
+            <input type="password" class="kaibosh-input" placeholder="Both Passwords must match" name="volunteer_password2" required />
+            <button class="kaibosh-button">Sign up</button>
+        </div>
+    <br>
+    <br>
+    <br>
+    <p> Already have an account? <a href="/login"> Log In!</a></p>
 {% endblock %}
-
-{% block pageheading %}
-    In this website, you can track the statistics of everything Kaibosh does.
-    From rescuing outdated goods from supermarkets and riverside markets, to sorting them into boxes,
-    to donating it to those in need.
-    Kaibosh does it all, and you can track it here!
-{% endblock %}
-
-
