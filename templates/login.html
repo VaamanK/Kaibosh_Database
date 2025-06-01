@@ -3,14 +3,14 @@
 {% block pageheading %}Login{% endblock %}
 
 {% block main %}
-    <div class="kaibosh-container">
-        <h2> Login</h2>
-        <input type="email" class="kaibosh-input" placeholder="Email" />
-        <input type="password" class="kaibosh-input" placeholder="Password must be 8 characters" />
-        <button class="kaibosh-button">Log In</button>
-    </div>
-    <br>
-    <br>
-    <br>
-    <p> Don't have an account? <a href="/signup"> Sign up!</a></p>
+    <form method="post">
+        <div class="kaibosh-container">
+            <h2>Login</h2>
+            <input type="email" class="kaibosh-input" placeholder="Email" name="volunteer_email" required />
+            <input type="password" class="kaibosh-input" placeholder="Password" name="volunteer_password" required />
+            <button class="kaibosh-button">Log In</button>
+        </div>
+    </form>
+    <br><br><br>
+    <p>Don't have an account? <a href="/signup">Sign Up!</a></p>
 {% endblock %}
