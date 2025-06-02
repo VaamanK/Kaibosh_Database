@@ -1,4 +1,4 @@
-from flask import Flask, render_template, redirect, request
+from flask import Flask, render_template, redirect, request, session, url_for
 import sqlite3
 from sqlite3 import Error
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -6,6 +6,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 DATABASE = "kaibosh_table"
 
 app = Flask(__name__)
+app.secret_key = 'secret_kaibosh'
 
 def connect_database(db_file):
     try:
@@ -40,13 +41,13 @@ def login():
         try:
             con = connect_database(DATABASE)
             cursor = con.cursor()
-
             query = "SELECT v_password FROM volunteer_signup WHERE v_email = ?"
             cursor.execute(query, (email,))
             row = cursor.fetchone()
             con.close()
 
             if row and check_password_hash(row[0], password):
+                session['user_email'] = email
                 return redirect("/")
             else:
                 return redirect("/login?error=invalid-credentials")
@@ -56,6 +57,11 @@ def login():
             return redirect("/login?error=database-error")
 
     return render_template('login.html')
+
+@app.route('/logout')
+def logout():
+    session.pop('user_email', None)
+    return redirect('/')
 
 @app.route('/signup', methods=['POST', 'GET'])
 def signup():
@@ -74,22 +80,20 @@ def signup():
 
         hashed_pw = generate_password_hash(password)
 
-        try:
-            con = connect_database(DATABASE)
-            cursor = con.cursor()
+        con = connect_database(DATABASE)
+        cursor = con.cursor()
 
-            query = "SELECT * FROM volunteer_signup WHERE v_email = ?"
-            cursor.execute(query, (email,))
-            if cursor.fetchone():
-                return redirect("/signup?error=email-already-registered")
+        query = "SELECT * FROM volunteer_signup WHERE v_email = ?"
+        cursor.execute(query, (email,))
+        if cursor.fetchone():
+            return redirect("/signup?error=email-already-registered")
 
-            query_insert = "INSERT INTO volunteer_signup (v_fname, v_lname, v_email, v_password) VALUES (?, ?, ?, ?)"
+        query_insert = "INSERT INTO volunteer_signup (v_fname, v_lname, v_email, v_password) VALUES (?, ?, ?, ?)"
 
-            cursor.execute(query_insert, (fname, lname, email, hashed_pw))
-            con.commit()
-            con.close()
-
-            return redirect("/login?success=account-created")
+        cursor.execute(query_insert, (fname, lname, email, hashed_pw))
+        con.commit()
+        con.close()
+        return redirect("/login?success=account-created")
 
     return render_template('signup.html')
 
