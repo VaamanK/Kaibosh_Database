@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block pageheading %}Donations
+This page keeps track of which food was donated and to whom.
+As a volunteer it is your job to keep track of where food goes to make sure everyone is fed.
+{% endblock %}
+
+{% block main %}
+<h2 style="text-align: center;">Food Donations</h2>
+
+
+<table>
+    <thead>
+        <tr>
+            <th>Donation Contents</th>
+            <th>Receiver Name</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for donation in donation_records %}
+        <tr>
+            <td>{{ donation[0] }}</td>
+            <td>{{ donation[1] }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+<br><br><br>
+    {% if can_add %}
+    <div class="kaibosh-container" style="margin: auto;">
+        <form method="POST">
+            <h2>Add Donation</h2>
+            <input type="text" class="kaibosh-input" name="donation_contents" placeholder="Donation Contents" required>
+            <input type="text" class="kaibosh-input" name="receiver_name" placeholder="Receiver Name" required>
+            <button type="submit" class="kaibosh-button">Add Donation</button>
+        </form>
+    </div>
+    <br>
+    {% endif %}
+{% endblock %}

@@ -1,4 +1,47 @@
 {% extends "base.html" %}
 
-{% block pageheading %} Here you will find out what happened to the food rescued (compost, animals or donated). {%endblock %}
+{% block pageheading %} Here you will find out what happened to the food rescued (compost, animals or donated).
+As a volunteer,
+it is your job to sort the boxes into these categories and log them
+here so we can keep track of them.
+{%endblock %}
 
+{% block main %}
+<h2 style="text-align: center;">Sorted Food Boxes</h2>
+
+<table>
+    <thead>
+        <tr>
+            <th>Box Type</th>
+            <th>Contents</th>
+            <th>Weight (kg)</th>
+            <th>Extra Information</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for box in sorted_boxes %}
+        <tr>
+            <td>{{ box[0] }}</td>
+            <td>{{ box[1] }}</td>
+            <td>{{ box[2] }}</td>
+            <td>{{ box[3] }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+<br><br><br>
+{% if can_add %}
+<div class="kaibosh-container" style="margin: auto;">
+    <form method="POST">
+        <h2>Add Sorted Box</h2>
+        <input type="text" class="kaibosh-input" name="box_type" placeholder="Edible/Compost/Animals" required>
+        <input type="text" class="kaibosh-input" name="box_contents" placeholder="Mixed/Single Item" required>
+        <input type="number" class="kaibosh-input" name="box_weight" placeholder="Weight (kg)" required>
+        <input type="number" class="kaibosh-input" name="extra_information" placeholder="Removed items from collections" required>
+        <button type="submit" class="kaibosh-button">Add Box</button>
+    </form>
+</div>
+<br>
+{% endif %}
+
+{% endblock %}

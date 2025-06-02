@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title> | home</title>
+    <title> Kaibosh </title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200;400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.css"/>
@@ -13,14 +13,14 @@
 <nav>
     <a href="/">Home</a>
     {% if session.get('user_email') %}
-        <a href="/input">Collections</a>
+        <a href="/collections">Collections</a>
         <a href="/sort">Sorts</a>
-        <a href="/output">Donations</a>
+        <a href="/donations">Donations</a>
         <a href="/logout">Logout</a>
     {% else %}
-        <a href="/input">Collections</a>
+        <a href="/collections">Collections</a>
         <a href="/sort">Sorts</a>
-        <a href="/output">Donations</a>
+        <a href="/donations">Donations</a>
         <a href="/signup">Signup</a>
         <a href="/login">Login</a>
     {% endif %}

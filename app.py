@@ -6,7 +6,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 DATABASE = "kaibosh_table"
 
 app = Flask(__name__)
-app.secret_key = 'secret_kaibosh'
+app.secret_key = 'hhnatk'
 
 def connect_database(db_file):
     try:
@@ -20,17 +20,64 @@ def connect_database(db_file):
 def homepage():
     return render_template('homepage.html')
 
-@app.route('/input')
-def input():
-    return render_template('input.html')
+@app.route('/collections', methods=['GET', 'POST'])
+def collections():
+    con = connect_database(DATABASE)
+    cursor = con.cursor()
 
-@app.route('/sort')
+    if request.method == 'POST' and session.get('user_email'):
+        content = request.form.get('collected_box_contents').strip()
+        weight = request.form.get('collected_box_weight')
+        donor = request.form.get('donor').strip()
+
+        insert_query = 'INSERT INTO collections (collected_box_contents, collected_box_weight, donor) VALUES (?, ?, ?)'
+        cursor.execute(insert_query, (content, weight, donor))
+        con.commit()
+
+    cursor.execute("SELECT * FROM collections")
+    boxes = cursor.fetchall()
+    con.close()
+    return render_template('collections.html', boxes=boxes, can_add=session.get('user_email') is not None)
+
+@app.route('/sort', methods=['GET', 'POST'])
 def sort():
-    return render_template('sort.html')
+    con = connect_database(DATABASE)
+    cursor = con.cursor()
 
-@app.route('/output')
-def output():
-    return render_template('output.html')
+    if request.method == 'POST' and session.get('user_email'):
+        box_type = request.form.get('box_type').strip()
+        box_contents = request.form.get('box_contents').strip()
+        box_weight = request.form.get('box_weight')
+        extra_information = request.form.get('extra_information')
+
+        insert_query = 'INSERT INTO sorts (box_type, box_contents, box_weight, extra_information) VALUES (?, ?, ?, ?)'
+        cursor.execute(insert_query, (box_type, box_contents, box_weight, extra_information))
+        con.commit()
+
+    cursor.execute("SELECT * FROM sorts")
+    sorted_boxes = cursor.fetchall()
+    con.close()
+    return render_template('sort.html', sorted_boxes=sorted_boxes, can_add=session.get('user_email'))
+
+
+@app.route('/donations', methods=['GET', 'POST'])
+def donations():
+    con = connect_database(DATABASE)
+    cursor = con.cursor()
+
+    if request.method == 'POST' and session.get('user_email'):
+        donation_contents = request.form.get('donation_contents').strip()
+        receiver_name = request.form.get('receiver_name').strip()
+
+        insert_query = 'INSERT INTO donations (donation_contents, receiver_name) VALUES (?, ?)'
+        cursor.execute(insert_query, (donation_contents, receiver_name))
+        con.commit()
+
+    cursor.execute("SELECT * FROM donations")
+    donation_records = cursor.fetchall()
+    con.close()
+    return render_template('donations.html', donation_records=donation_records, can_add=session.get('user_email'))
+
 
 @app.route('/login', methods=['POST', 'GET'])
 def login():
@@ -38,23 +85,18 @@ def login():
         email = request.form.get('volunteer_email').lower().strip()
         password = request.form.get('volunteer_password')
 
-        try:
-            con = connect_database(DATABASE)
-            cursor = con.cursor()
-            query = "SELECT v_password FROM volunteer_signup WHERE v_email = ?"
-            cursor.execute(query, (email,))
-            row = cursor.fetchone()
-            con.close()
+        con = connect_database(DATABASE)
+        cursor = con.cursor()
+        query = "SELECT v_password FROM volunteer_signup WHERE v_email = ?"
+        cursor.execute(query, (email,))
+        row = cursor.fetchone()
+        con.close()
 
-            if row and check_password_hash(row[0], password):
-                session['user_email'] = email
-                return redirect("/")
-            else:
-                return redirect("/login?error=invalid-credentials")
-
-        except Error as e:
-            print(f"Login error: {e}")
-            return redirect("/login?error=database-error")
+        if row and check_password_hash(row[0], password):
+            session['user_email'] = email
+            return redirect("/")
+        else:
+            return redirect("/login?error=invalid-credentials")
 
     return render_template('login.html')
 
@@ -89,7 +131,6 @@ def signup():
             return redirect("/signup?error=email-already-registered")
 
         query_insert = "INSERT INTO volunteer_signup (v_fname, v_lname, v_email, v_password) VALUES (?, ?, ?, ?)"
-
         cursor.execute(query_insert, (fname, lname, email, hashed_pw))
         con.commit()
         con.close()
