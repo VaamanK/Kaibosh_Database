@@ -45,39 +45,42 @@ def sort():
     cursor = con.cursor()
 
     if request.method == 'POST' and session.get('user_email'):
-        box_type = request.form.get('box_type').strip()
-        box_contents = request.form.get('box_contents').strip()
+        box_type = request.form.get('box_type')
+        box_contents = request.form.get('box_contents')
         box_weight = request.form.get('box_weight')
-        extra_information = request.form.get('extra_information')
+        collected_box_id = request.form.get('collected_box_id')
 
-        insert_query = 'INSERT INTO sorts (box_type, box_contents, box_weight, extra_information) VALUES (?, ?, ?, ?)'
-        cursor.execute(insert_query, (box_type, box_contents, box_weight, extra_information))
+        insert_query = 'INSERT INTO sorts (box_type, box_contents, box_weight, collected_box_id) VALUES (?, ?, ?, ?)'
+        cursor.execute(insert_query, (box_type, box_contents, box_weight, collected_box_id))
         con.commit()
 
     cursor.execute("SELECT * FROM sorts")
     sorted_boxes = cursor.fetchall()
+    collection_options, _ = get_dropdown_data()
     con.close()
-    return render_template('sort.html', sorted_boxes=sorted_boxes, can_add=session.get('user_email'))
 
+    return render_template("sort.html", sorted_boxes=sorted_boxes, can_add=session.get('user_email') is not None, collection_options=collection_options)
 
-@app.route('/donations', methods=['GET', 'POST'])
-def donations():
+@app.route('/receivers', methods=['GET', 'POST'])
+def receivers():
     con = connect_database(DATABASE)
     cursor = con.cursor()
 
     if request.method == 'POST' and session.get('user_email'):
-        donation_contents = request.form.get('donation_contents').strip()
-        receiver_name = request.form.get('receiver_name').strip()
+        donation_contents = request.form.get('donation_contents')
+        receiver_name = request.form.get('receiver_name')
+        sort_id = request.form.get('sort_id')
 
-        insert_query = 'INSERT INTO donations (donation_contents, receiver_name) VALUES (?, ?)'
-        cursor.execute(insert_query, (donation_contents, receiver_name))
+        insert_query = 'INSERT INTO receivers (donation_contents, receiver_name, sort_id) VALUES (?, ?, ?)'
+        cursor.execute(insert_query, (donation_contents, receiver_name, sort_id))
         con.commit()
 
-    cursor.execute("SELECT * FROM donations")
+    cursor.execute("SELECT donation_contents, receiver_name FROM receivers")
     donation_records = cursor.fetchall()
+    _, sort_options = get_dropdown_data()
     con.close()
-    return render_template('donations.html', donation_records=donation_records, can_add=session.get('user_email'))
 
+    return render_template("receivers.html", donation_records=donation_records, can_add=session.get('user_email') is not None, sort_options=sort_options)
 
 @app.route('/login', methods=['POST', 'GET'])
 def login():
@@ -137,6 +140,17 @@ def signup():
         return redirect("/login?success=account-created")
 
     return render_template('signup.html')
+
+def get_dropdown_data():
+    con = connect_database(DATABASE)
+    cursor = con.cursor()
+    cursor.execute("SELECT box_id, collected_box_contents FROM collections WHERE box_id NOT IN (SELECT collected_box_id FROM sorts WHERE collected_box_id IS NOT NULL)")
+    collection_options = cursor.fetchall()
+    cursor.execute("SELECT sort_id, box_contents FROM sorts WHERE sort_id NOT IN (SELECT sort_id FROM receivers WHERE sort_id IS NOT NULL)")
+    sort_options = cursor.fetchall()
+    con.close()
+    return collection_options, sort_options
+
 
 if __name__ == '__main__':
     app.run()

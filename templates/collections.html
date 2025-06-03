@@ -1,7 +1,14 @@
 {% extends "base.html" %}
-{% block pageheading %}Collections
-As a volunteer, it is your job to input what you have collected here
-so we can keep track of it.
+{% block pageheading %}
+<div style="padding-left: 10px; font-size: 1.25rem;">
+    Collections <br>
+    As a volunteer, it is your job to input what you have collected here
+    so we can keep track of it. <br>
+    You are expected to fill out the contents of the box, this includes every vegetable that is put in the box. <br>
+    You are also expected to weigh the box and input it so we can keep track. <br>
+    Make sure it is less than 15 Kilos so it is lift-able. <br>
+    Be sure to specify where this food is rescued from. <br>
+</div>
 {% endblock %}
 
 {% block main %}
@@ -19,10 +26,10 @@ so we can keep track of it.
         <tbody>
             {% for box in boxes %}
             <tr>
-                <td>{{ box[3] }}</td>
                 <td>{{ box[0] }}</td>
                 <td>{{ box[1] }}</td>
                 <td>{{ box[2] }}</td>
+                <td>{{ box[3] }}</td>
             </tr>
             {% endfor %}
         </tbody>
@@ -33,7 +40,7 @@ so we can keep track of it.
         <form method="POST">
             <h2>Add New Box</h2>
             <input type="text" class="kaibosh-input" name="collected_box_contents" placeholder="Box Contents" required>
-            <input type="number" step=".01" class="kaibosh-input" name="collected_box_weight" placeholder="Weight (kg)" required>
+            <input type="number" step=".01" min="0" class="kaibosh-input" name="collected_box_weight" placeholder="Weight (kg)" required>
             <input type="text" class="kaibosh-input" name="donor" placeholder="Rescue location" required>
             <button type="submit" class="kaibosh-button">Add Box</button>
         </form>
