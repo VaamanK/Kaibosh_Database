@@ -76,10 +76,7 @@ def sort():
 
     cursor.execute("SELECT * FROM sorts WHERE approved = 1")
     sorted_boxes = cursor.fetchall()
-    collection_options = get_dropdown_data()
-    if collection_options == None:
-        con.close()
-        return redirect('/sort?error?Must+Fill+All')
+    collection_options, _ = get_dropdown_data()
 
     con.close()
     return render_template("sort.html", sorted_boxes=sorted_boxes, admin=is_admin(), login=is_login(), collection_options=collection_options)
@@ -101,9 +98,7 @@ def receivers():
 
     cursor.execute("SELECT donation_contents, receiver_name FROM receivers WHERE approved = 1")
     donation_records = cursor.fetchall()
-    _, sort_options = get_dropdown_data()
-    if sort_options == None:
-        return redirect('/sort?error?Must+Fill+All')
+    _ ,sort_options = get_dropdown_data()
     con.close()
 
     return render_template("receivers.html", donation_records=donation_records, admin=is_admin(), login=is_login(),

@@ -72,12 +72,12 @@
 {% if pending_receivers %}
     {% for r in pending_receivers %}
         <form method="post" action="{{ url_for('approve_receiver') }}" style="display: flex; gap: 10px;">
-            <input type="hidden" name="rowid" value="{{ r.rowid }}">
+            <input type="hidden" name="sort_id" value="{{ r.sort_id }}">
             <input class="kaibosh-input" type="text" value="Contents: {{ r.donation_contents }} | Receiver: {{ r.receiver_name }} | Sort ID: {{ r.sort_id }}" disabled>
             <button class="kaibosh-button" type="submit">Approve</button>
         </form>
         <form method="post" action="{{ url_for('reject_receiver') }}" style="display: flex; gap: 10px;">
-            <input type="hidden" name="rowid" value="{{ r.rowid }}">
+            <input type="hidden" name="sort_id" value="{{ r.sort_id }}">
             <input class="kaibosh-input" type="text" value="Contents: {{ r.donation_contents }} | Receiver: {{ r.receiver_name }} | Sort ID: {{ r.sort_id }}" disabled>
             <button class="kaibosh-button" type="submit">Reject</button>
         </form>
