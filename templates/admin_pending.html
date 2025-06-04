@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block pageheading %}Admin Approvals{% endblock %}
+
+{% block main %}
+
+<!-- Pending Volunteers -->
+<h2>Pending Volunteer Accounts</h2>
+{% if pending_volunteers %}
+    {% for v in pending_volunteers %}
+        <form method="post" action="{{ url_for('approve_volunteer') }}" style="display: flex; gap: 10px;">
+            <input type="hidden" name="v_id" value="{{ v.v_id }}">
+            <input class="kaibosh-input" type="text" value="{{ v.v_fname }} {{ v.v_lname }} ({{ v.v_email }})" disabled>
+            <button class="kaibosh-button" type="submit">Approve</button>
+        </form>
+        <form method="post" action="{{ url_for('reject_volunteer') }}" style="display: flex; gap: 10px;">
+            <input type="hidden" name="v_id" value="{{ v.v_id }}">
+            <input class="kaibosh-input" type="text" value="{{ v.v_fname }} {{ v.v_lname }} ({{ v.v_email }})" disabled>
+            <button class="kaibosh-button" type="submit">Reject</button>
+        </form>
+    {% endfor %}
+{% else %}
+    <p>No pending volunteer accounts.</p>
+{% endif %}
+
+<br><br>
+
+<!-- Pending Collections -->
+<h2>Pending Collections</h2>
+{% if pending_collections %}
+    {% for c in pending_collections %}
+        <form method="post" action="{{ url_for('approve_collection') }}" style="display: flex; gap: 10px;">
+            <input type="hidden" name="box_id" value="{{ c.box_id }}">
+            <input class="kaibosh-input" type="text" value="Contents: {{ c.collected_box_contents }} | Weight: {{ c.collected_box_weight }} | Donor: {{ c.donor }}" disabled>
+            <button class="kaibosh-button" type="submit">Approve</button>
+        </form>
+        <form method="post" action="{{ url_for('reject_collection') }}" style="display: flex; gap: 10px;">
+            <input type="hidden" name="box_id" value="{{ c.box_id }}">
+            <input class="kaibosh-input" type="text" value="Contents: {{ c.collected_box_contents }} | Weight: {{ c.collected_box_weight }} | Donor: {{ c.donor }}" disabled>
+            <button class="kaibosh-button" type="submit">Reject</button>
+        </form>
+    {% endfor %}
+{% else %}
+    <p>No pending collections.</p>
+{% endif %}
+
+<br><br>
+
+<!-- Pending Sorts -->
+<h2>Pending Sorts</h2>
+{% if pending_sorts %}
+    {% for s in pending_sorts %}
+        <form method="post" action="{{ url_for('approve_sort') }}" style="display: flex; gap: 10px;">
+            <input type="hidden" name="sort_id" value="{{ s.sort_id }}">
+            <input class="kaibosh-input" type="text" value="Type: {{ s.box_type }} | Contents: {{ s.box_contents }} | Weight: {{ s.box_weight }}" disabled>
+            <button class="kaibosh-button" type="submit">Approve</button>
+        </form>
+        <form method="post" action="{{ url_for('reject_sort') }}" style="display: flex; gap: 10px;">
+            <input type="hidden" name="sort_id" value="{{ s.sort_id }}">
+            <input class="kaibosh-input" type="text" value="Type: {{ s.box_type }} | Contents: {{ s.box_contents }} | Weight: {{ s.box_weight }}" disabled>
+            <button class="kaibosh-button" type="submit">Reject</button>
+        </form>
+    {% endfor %}
+{% else %}
+    <p>No pending sorts.</p>
+{% endif %}
+
+<br><br>
+
+<!-- Pending Receivers -->
+<h2>Pending Receivers</h2>
+{% if pending_receivers %}
+    {% for r in pending_receivers %}
+        <form method="post" action="{{ url_for('approve_receiver') }}" style="display: flex; gap: 10px;">
+            <input type="hidden" name="rowid" value="{{ r.rowid }}">
+            <input class="kaibosh-input" type="text" value="Contents: {{ r.donation_contents }} | Receiver: {{ r.receiver_name }} | Sort ID: {{ r.sort_id }}" disabled>
+            <button class="kaibosh-button" type="submit">Approve</button>
+        </form>
+        <form method="post" action="{{ url_for('reject_receiver') }}" style="display: flex; gap: 10px;">
+            <input type="hidden" name="rowid" value="{{ r.rowid }}">
+            <input class="kaibosh-input" type="text" value="Contents: {{ r.donation_contents }} | Receiver: {{ r.receiver_name }} | Sort ID: {{ r.sort_id }}" disabled>
+            <button class="kaibosh-button" type="submit">Reject</button>
+        </form>
+    {% endfor %}
+{% else %}
+    <p>No pending receivers.</p>
+{% endif %}
+
+{% endblock %}

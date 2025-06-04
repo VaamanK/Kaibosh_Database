@@ -1,7 +1,6 @@
 from flask import Flask, render_template, redirect, request, session, url_for
 import sqlite3
 from sqlite3 import Error
-from werkzeug.security import generate_password_hash, check_password_hash
 
 DATABASE = "kaibosh_table"
 
@@ -9,16 +8,13 @@ app = Flask(__name__)
 app.secret_key = 'hhnatk'
 
 def connect_database(db_file):
-    try:
-        connection = sqlite3.connect(db_file)
-        return connection
-    except Error as e:
-        print(f'Error while connecting to database: {e}')
-    return None
+    connection = sqlite3.connect(db_file)
+    connection.row_factory = sqlite3.Row
+    return connection
 
-@app.route('/')
+@app.route('/', methods=['GET', 'POST'])
 def homepage():
-    return render_template('homepage.html')
+    return render_template('homepage.html',admin=is_admin(),login=is_login())
 
 @app.route('/collections', methods=['GET', 'POST'])
 def collections():
@@ -30,14 +26,14 @@ def collections():
         weight = request.form.get('collected_box_weight')
         donor = request.form.get('donor').strip()
 
-        insert_query = 'INSERT INTO collections (collected_box_contents, collected_box_weight, donor) VALUES (?, ?, ?)'
+        insert_query = 'INSERT INTO collections (collected_box_contents, collected_box_weight, donor, approved) VALUES (?, ?, ?, 0)'
         cursor.execute(insert_query, (content, weight, donor))
         con.commit()
 
-    cursor.execute("SELECT * FROM collections")
+    cursor.execute("SELECT * FROM collections WHERE approved = 1")
     boxes = cursor.fetchall()
     con.close()
-    return render_template('collections.html', boxes=boxes, can_add=session.get('user_email') is not None)
+    return render_template('collections.html', boxes=boxes, admin=is_admin(),login=is_login())
 
 @app.route('/sort', methods=['GET', 'POST'])
 def sort():
@@ -50,16 +46,16 @@ def sort():
         box_weight = request.form.get('box_weight')
         collected_box_id = request.form.get('collected_box_id')
 
-        insert_query = 'INSERT INTO sorts (box_type, box_contents, box_weight, collected_box_id) VALUES (?, ?, ?, ?)'
+        insert_query = 'INSERT INTO sorts (box_type, box_contents, box_weight, collected_box_id, approved) VALUES (?, ?, ?, ?, 0)'
         cursor.execute(insert_query, (box_type, box_contents, box_weight, collected_box_id))
         con.commit()
 
-    cursor.execute("SELECT * FROM sorts")
+    cursor.execute("SELECT * FROM sorts WHERE approved = 1")
     sorted_boxes = cursor.fetchall()
     collection_options, _ = get_dropdown_data()
     con.close()
 
-    return render_template("sort.html", sorted_boxes=sorted_boxes, can_add=session.get('user_email') is not None, collection_options=collection_options)
+    return render_template("sort.html", sorted_boxes=sorted_boxes,admin=is_admin(),login=is_login(), collection_options=collection_options)
 
 @app.route('/receivers', methods=['GET', 'POST'])
 def receivers():
@@ -71,41 +67,69 @@ def receivers():
         receiver_name = request.form.get('receiver_name')
         sort_id = request.form.get('sort_id')
 
-        insert_query = 'INSERT INTO receivers (donation_contents, receiver_name, sort_id) VALUES (?, ?, ?)'
+        insert_query = 'INSERT INTO receivers (donation_contents, receiver_name, sort_id, approved) VALUES (?, ?, ?, 0)'
         cursor.execute(insert_query, (donation_contents, receiver_name, sort_id))
         con.commit()
 
-    cursor.execute("SELECT donation_contents, receiver_name FROM receivers")
+    cursor.execute("SELECT donation_contents, receiver_name FROM receivers WHERE approved = 1")
     donation_records = cursor.fetchall()
     _, sort_options = get_dropdown_data()
     con.close()
 
-    return render_template("receivers.html", donation_records=donation_records, can_add=session.get('user_email') is not None, sort_options=sort_options)
+    return render_template("receivers.html", donation_records=donation_records, admin=is_admin(),login=is_login(), sort_options=sort_options)
 
-@app.route('/login', methods=['POST', 'GET'])
+@app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
         email = request.form.get('volunteer_email').lower().strip()
         password = request.form.get('volunteer_password')
 
+        query = "SELECT v_password, role, approved FROM volunteer_signup WHERE v_email = ?"
         con = connect_database(DATABASE)
         cursor = con.cursor()
-        query = "SELECT v_password FROM volunteer_signup WHERE v_email = ?"
         cursor.execute(query, (email,))
-        row = cursor.fetchone()
+        user_info = cursor.fetchone()
         con.close()
 
-        if row and check_password_hash(row[0], password):
-            session['user_email'] = email
-            return redirect("/")
-        else:
-            return redirect("/login?error=invalid-credentials")
+        if not user_info:
+            return redirect("/login?error=user-not-found")
 
-    return render_template('login.html')
+        v_password = user_info[0]
+        approved = user_info[2]
+        admin = user_info[1]
+
+
+        if password != v_password:
+            return redirect("/login?error=wrong-password")
+
+        else:
+            session['user_email'] = email
+            session['approved'] = approved
+            session['admin']= admin
+            print(session)
+            if session['approved']==0:
+                return redirect("/login?error=account-not-approved")
+            return redirect("/")
+
+    return render_template('login.html', admin=is_admin(),login=is_login())
+
+def is_admin():
+    if session.get('admin') ==1:
+        return True
+    else:
+        return False
+
+def is_login():
+    print(session.get('user_email'))
+    if session.get('user_email')== None:
+        return False
+    else:
+        return True
+
 
 @app.route('/logout')
 def logout():
-    session.pop('user_email', None)
+    session.clear()
     return redirect('/')
 
 @app.route('/signup', methods=['POST', 'GET'])
@@ -123,8 +147,6 @@ def signup():
         if len(password) < 8:
             return redirect("/signup?error=password-must-be-8-characters")
 
-        hashed_pw = generate_password_hash(password)
-
         con = connect_database(DATABASE)
         cursor = con.cursor()
 
@@ -133,23 +155,129 @@ def signup():
         if cursor.fetchone():
             return redirect("/signup?error=email-already-registered")
 
-        query_insert = "INSERT INTO volunteer_signup (v_fname, v_lname, v_email, v_password) VALUES (?, ?, ?, ?)"
-        cursor.execute(query_insert, (fname, lname, email, hashed_pw))
+        query_insert = "INSERT INTO volunteer_signup (v_fname, v_lname, v_email, v_password, role, approved) VALUES (?, ?, ?, ?, 0, 0)"
+        cursor.execute(query_insert, (fname, lname, email, password))
         con.commit()
         con.close()
-        return redirect("/login?success=account-created")
+        return redirect("/login?success=account-creation-pending")
 
     return render_template('signup.html')
 
 def get_dropdown_data():
     con = connect_database(DATABASE)
     cursor = con.cursor()
-    cursor.execute("SELECT box_id, collected_box_contents FROM collections WHERE box_id NOT IN (SELECT collected_box_id FROM sorts WHERE collected_box_id IS NOT NULL)")
+    cursor.execute("SELECT box_id, collected_box_contents FROM collections WHERE approved = 1 AND box_id NOT IN (SELECT collected_box_id FROM sorts WHERE collected_box_id IS NOT NULL)")
     collection_options = cursor.fetchall()
-    cursor.execute("SELECT sort_id, box_contents FROM sorts WHERE sort_id NOT IN (SELECT sort_id FROM receivers WHERE sort_id IS NOT NULL)")
+    cursor.execute("SELECT sort_id, box_contents FROM sorts WHERE approved = 1 AND sort_id NOT IN (SELECT sort_id FROM receivers WHERE sort_id IS NOT NULL)")
     sort_options = cursor.fetchall()
     con.close()
     return collection_options, sort_options
+
+@app.route('/admin_pending')
+def admin_pending():
+    con = connect_database(DATABASE)
+    cursor = con.cursor()
+
+    cursor.execute("SELECT * FROM collections WHERE approved = 0")
+    pending_collections = cursor.fetchall()
+
+    cursor.execute("SELECT * FROM sorts WHERE approved = 0")
+    pending_sorts = cursor.fetchall()
+
+    cursor.execute("SELECT * FROM receivers WHERE approved = 0")
+    pending_receivers = cursor.fetchall()
+
+    cursor.execute("SELECT * FROM volunteer_signup WHERE approved = 0")
+    pending_volunteers = cursor.fetchall()
+
+    con.close()
+
+    return render_template('admin_pending.html',
+                           pending_collections=pending_collections,
+                           pending_sorts=pending_sorts,
+                           pending_receivers=pending_receivers,
+                           pending_volunteers=pending_volunteers, admin=is_admin(),login=is_login())
+
+@app.route('/admin/collections/approve', methods=['GET','POST'])
+def approve_collection():
+    box_id = request.form.get('box_id')
+    print(box_id)
+    con = connect_database(DATABASE)
+    cursor = con.cursor()
+    cursor.execute("UPDATE collections SET approved = 1 WHERE box_id = ?", (box_id,))
+    con.commit()
+    con.close()
+    return redirect('/admin_pending')
+
+@app.route('/admin/collections/reject', methods=['POST'])
+def reject_collection():
+    box_id = request.form.get('box_id')
+    con = connect_database(DATABASE)
+    cursor = con.cursor()
+    cursor.execute("DELETE FROM collections WHERE box_id = ?", (box_id,))
+    con.commit()
+    con.close()
+    return redirect('/admin_pending')
+
+@app.route('/admin/sorts/approve', methods=['POST'])
+def approve_sort():
+    sort_id = request.form.get('sort_id')
+    con = connect_database(DATABASE)
+    cursor = con.cursor()
+    cursor.execute("UPDATE sorts SET approved = 1 WHERE sort_id = ?", (sort_id,))
+    con.commit()
+    con.close()
+    return redirect('/admin_pending')
+
+@app.route('/admin/sorts/reject', methods=['POST'])
+def reject_sort():
+    sort_id = request.form.get('sort_id')
+    con = connect_database(DATABASE)
+    cursor = con.cursor()
+    cursor.execute("DELETE FROM sorts WHERE sort_id = ?", (sort_id,))
+    con.commit()
+    con.close()
+    return redirect('/admin_pending')
+
+@app.route('/admin/receivers/approve', methods=['POST'])
+def approve_receiver():
+    sort_id = request.form.get('sort_id')
+    con = connect_database(DATABASE)
+    cursor = con.cursor()
+    cursor.execute("UPDATE receivers SET approved = 1 WHERE sort_id = ?", (sort_id,))
+    con.commit()
+    con.close()
+    return redirect('/admin_pending')
+
+@app.route('/admin/receivers/reject', methods=['POST'])
+def reject_receiver():
+    sort_id = request.form.get('sort_id')
+    con = connect_database(DATABASE)
+    cursor = con.cursor()
+    cursor.execute("DELETE FROM receivers WHERE sort_id = ?", (sort_id,))
+    con.commit()
+    con.close()
+    return redirect('/admin_pending')
+
+@app.route('/admin/volunteers/approve', methods=['POST'])
+def approve_volunteer():
+    v_id = request.form.get('v_id')
+    con = connect_database(DATABASE)
+    cursor = con.cursor()
+    cursor.execute("UPDATE volunteer_signup SET approved = 1 WHERE v_id = ?", (v_id,))
+    con.commit()
+    con.close()
+    return redirect('/admin_pending')
+
+@app.route('/admin/volunteers/reject', methods=['POST'])
+def reject_volunteer():
+    v_id = request.form.get('v_id')
+    con = connect_database(DATABASE)
+    cursor = con.cursor()
+    cursor.execute("DELETE FROM volunteer_signup WHERE v_id = ?", (v_id,))
+    con.commit()
+    con.close()
+    return redirect('/admin_pending')
 
 
 if __name__ == '__main__':
