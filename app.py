@@ -1,6 +1,7 @@
 from flask import Flask, render_template, redirect, request, session
 import sqlite3
 from sqlite3 import Error
+from flask_bcrypt import Bcrypt
 
 
 
@@ -8,7 +9,7 @@ DATABASE = "kaibosh_table"
 
 app = Flask(__name__)
 app.secret_key = 'hhnatk'
-
+bcrypt = Bcrypt(app)
 
 @app.context_processor
 def inject_user_status():
@@ -16,9 +17,11 @@ def inject_user_status():
 
 
 def connect_database(db_file):
-    connection = sqlite3.connect(db_file)
-    connection.row_factory = sqlite3.Row
-    return connection
+    try:
+        connection = sqlite3.connect(db_file)
+        return connection
+    except Error:
+        print("An error has occured when connecting to the database.")
 
 
 def is_admin():
@@ -29,11 +32,12 @@ def is_admin():
 
 
 def is_login():
-    print(session.get('user_email'))
-    if session.get('user_email') == None:
+    print(session.get('v_email'))
+    if session.get('v_email') == None:
         return False
     else:
         return True
+
 
 
 @app.route('/', methods=['GET', 'POST'])
@@ -121,11 +125,20 @@ def login():
         con.close()
 
         if not user_info:
-            return redirect("/login?error=user-not-found")
+            return redirect("/login?error=password-is-wrong")
 
         v_password = user_info[0]
         approved = user_info[2]
         admin = user_info[1]
+
+        if admin == 1:
+            print(admin)
+            return redirect("/admin_pending")
+
+
+        if not bcrypt.check_password_hash(v_password, password):
+            return redirect('/login?error=email-or-password-is-wrong')
+
 
         if password != v_password:
             return redirect("/login?error=wrong-password")
@@ -134,7 +147,6 @@ def login():
             session['user_email'] = email
             session['approved'] = approved
             session['admin'] = admin
-            print(session)
             if session['approved'] == 0:
                 return redirect("/login?error=account-not-approved")
             return redirect("/")
@@ -156,6 +168,7 @@ def signup():
         email = request.form.get('volunteer_email').lower().strip()
         password = request.form.get('volunteer_password')
         password2 = request.form.get('volunteer_password2')
+        admin_code = request.form.get('admin_code')
 
         if password != password2:
             return redirect("/signup?error=passwords-do-not-match")
@@ -163,19 +176,35 @@ def signup():
         if len(password) < 8:
             return redirect("/signup?error=password-must-be-8-characters")
 
+        hashed_password = bcrypt.generate_password_hash(password)
+
+        if admin_code == '3033':
+            is_admin = 1
+        else:
+            is_admin = 0
         con = connect_database(DATABASE)
         cursor = con.cursor()
+
 
         query = "SELECT * FROM signup WHERE v_email = ?"
         cursor.execute(query, (email,))
         if cursor.fetchone():
             return redirect("/signup?error=email-already-registered")
 
-        query_insert = "INSERT INTO signup (v_fname, v_lname, v_email, v_password, role, approved) VALUES (?, ?, ?, ?, 0, 0)"
-        cursor.execute(query_insert, (fname, lname, email, password))
-        con.commit()
-        con.close()
-        return redirect("/login?success=account-creation-pending")
+        if is_admin ==1:
+            role = 1
+            query_insert = "INSERT INTO signup (v_fname, v_lname, v_email, v_password, role) VALUES (?, ?, ?, ?, ?)"
+            cursor.execute(query_insert, (fname, lname, email, hashed_password, is_admin))
+            con.commit()
+            con.close()
+            return redirect("/login?success=account-creation-pending")
+        else:
+            query_insert = "INSERT INTO signup (v_fname, v_lname, v_email, v_password) VALUES (?, ?, ?, ?)"
+            cursor.execute(query_insert, (fname, lname, email, hashed_password))
+            con.commit()
+            con.close()
+            return redirect("/login?success=account-creation-pending")
+
 
     return render_template('signup.html')
 
