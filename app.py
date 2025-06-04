@@ -2,6 +2,8 @@ from flask import Flask, render_template, redirect, request, session
 import sqlite3
 from sqlite3 import Error
 
+
+
 DATABASE = "kaibosh_table"
 
 app = Flask(__name__)
@@ -111,7 +113,7 @@ def login():
         email = request.form.get('volunteer_email').lower().strip()
         password = request.form.get('volunteer_password')
 
-        query = "SELECT v_password, role, approved FROM volunteer_signup WHERE v_email = ?"
+        query = "SELECT v_password, role, approved FROM signup WHERE v_email = ?"
         con = connect_database(DATABASE)
         cursor = con.cursor()
         cursor.execute(query, (email,))
@@ -164,12 +166,12 @@ def signup():
         con = connect_database(DATABASE)
         cursor = con.cursor()
 
-        query = "SELECT * FROM volunteer_signup WHERE v_email = ?"
+        query = "SELECT * FROM signup WHERE v_email = ?"
         cursor.execute(query, (email,))
         if cursor.fetchone():
             return redirect("/signup?error=email-already-registered")
 
-        query_insert = "INSERT INTO volunteer_signup (v_fname, v_lname, v_email, v_password, role, approved) VALUES (?, ?, ?, ?, 0, 0)"
+        query_insert = "INSERT INTO signup (v_fname, v_lname, v_email, v_password, role, approved) VALUES (?, ?, ?, ?, 0, 0)"
         cursor.execute(query_insert, (fname, lname, email, password))
         con.commit()
         con.close()
@@ -205,7 +207,7 @@ def admin_pending():
     cursor.execute("SELECT * FROM receivers WHERE approved = 0")
     pending_receivers = cursor.fetchall()
 
-    cursor.execute("SELECT * FROM volunteer_signup WHERE approved = 0")
+    cursor.execute("SELECT * FROM signup WHERE approved = 0")
     pending_volunteers = cursor.fetchall()
 
     con.close()
@@ -288,7 +290,7 @@ def approve_volunteer():
     v_id = request.form.get('v_id')
     con = connect_database(DATABASE)
     cursor = con.cursor()
-    cursor.execute("UPDATE volunteer_signup SET approved = 1 WHERE v_id = ?", (v_id,))
+    cursor.execute("UPDATE signup SET approved = 1 WHERE v_id = ?", (v_id,))
     con.commit()
     con.close()
     return redirect('/admin_pending')
@@ -299,7 +301,7 @@ def reject_volunteer():
     v_id = request.form.get('v_id')
     con = connect_database(DATABASE)
     cursor = con.cursor()
-    cursor.execute("DELETE FROM volunteer_signup WHERE v_id = ?", (v_id,))
+    cursor.execute("DELETE FROM signup WHERE v_id = ?", (v_id,))
     con.commit()
     con.close()
     return redirect('/admin_pending')
