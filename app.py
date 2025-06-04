@@ -1,4 +1,4 @@
-from flask import Flask, render_template, redirect, request, session, url_for
+from flask import Flask, render_template, redirect, request, session
 import sqlite3
 from sqlite3 import Error
 
@@ -7,14 +7,37 @@ DATABASE = "kaibosh_table"
 app = Flask(__name__)
 app.secret_key = 'hhnatk'
 
+
+@app.context_processor
+def inject_user_status():
+    return dict(admin=is_admin(), login=is_login())
+
+
 def connect_database(db_file):
     connection = sqlite3.connect(db_file)
     connection.row_factory = sqlite3.Row
     return connection
 
+
+def is_admin():
+    if session.get('admin') == 1:
+        return True
+    else:
+        return False
+
+
+def is_login():
+    print(session.get('user_email'))
+    if session.get('user_email') == None:
+        return False
+    else:
+        return True
+
+
 @app.route('/', methods=['GET', 'POST'])
 def homepage():
-    return render_template('homepage.html',admin=is_admin(),login=is_login())
+    return render_template('homepage.html', admin=is_admin(), login=is_login())
+
 
 @app.route('/collections', methods=['GET', 'POST'])
 def collections():
@@ -33,7 +56,8 @@ def collections():
     cursor.execute("SELECT * FROM collections WHERE approved = 1")
     boxes = cursor.fetchall()
     con.close()
-    return render_template('collections.html', boxes=boxes, admin=is_admin(),login=is_login())
+    return render_template('collections.html', boxes=boxes, admin=is_admin(), login=is_login())
+
 
 @app.route('/sort', methods=['GET', 'POST'])
 def sort():
@@ -52,10 +76,14 @@ def sort():
 
     cursor.execute("SELECT * FROM sorts WHERE approved = 1")
     sorted_boxes = cursor.fetchall()
-    collection_options, _ = get_dropdown_data()
-    con.close()
+    collection_options = get_dropdown_data()
+    if collection_options == None:
+        con.close()
+        return redirect('/sort?error?Must+Fill+All')
 
-    return render_template("sort.html", sorted_boxes=sorted_boxes,admin=is_admin(),login=is_login(), collection_options=collection_options)
+    con.close()
+    return render_template("sort.html", sorted_boxes=sorted_boxes, admin=is_admin(), login=is_login(), collection_options=collection_options)
+
 
 @app.route('/receivers', methods=['GET', 'POST'])
 def receivers():
@@ -74,9 +102,13 @@ def receivers():
     cursor.execute("SELECT donation_contents, receiver_name FROM receivers WHERE approved = 1")
     donation_records = cursor.fetchall()
     _, sort_options = get_dropdown_data()
+    if sort_options == None:
+        return redirect('/sort?error?Must+Fill+All')
     con.close()
 
-    return render_template("receivers.html", donation_records=donation_records, admin=is_admin(),login=is_login(), sort_options=sort_options)
+    return render_template("receivers.html", donation_records=donation_records, admin=is_admin(), login=is_login(),
+                           sort_options=sort_options)
+
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -98,39 +130,26 @@ def login():
         approved = user_info[2]
         admin = user_info[1]
 
-
         if password != v_password:
             return redirect("/login?error=wrong-password")
 
         else:
             session['user_email'] = email
             session['approved'] = approved
-            session['admin']= admin
+            session['admin'] = admin
             print(session)
-            if session['approved']==0:
+            if session['approved'] == 0:
                 return redirect("/login?error=account-not-approved")
             return redirect("/")
 
-    return render_template('login.html', admin=is_admin(),login=is_login())
-
-def is_admin():
-    if session.get('admin') ==1:
-        return True
-    else:
-        return False
-
-def is_login():
-    print(session.get('user_email'))
-    if session.get('user_email')== None:
-        return False
-    else:
-        return True
+    return render_template('login.html', admin=is_admin(), login=is_login())
 
 
 @app.route('/logout')
 def logout():
     session.clear()
     return redirect('/')
+
 
 @app.route('/signup', methods=['POST', 'GET'])
 def signup():
@@ -163,15 +182,19 @@ def signup():
 
     return render_template('signup.html')
 
+
 def get_dropdown_data():
     con = connect_database(DATABASE)
     cursor = con.cursor()
-    cursor.execute("SELECT box_id, collected_box_contents FROM collections WHERE approved = 1 AND box_id NOT IN (SELECT collected_box_id FROM sorts WHERE collected_box_id IS NOT NULL)")
+    cursor.execute(
+        "SELECT box_id, collected_box_contents FROM collections WHERE approved = 1 AND box_id NOT IN (SELECT collected_box_id FROM sorts WHERE collected_box_id IS NOT NULL)")
     collection_options = cursor.fetchall()
-    cursor.execute("SELECT sort_id, box_contents FROM sorts WHERE approved = 1 AND sort_id NOT IN (SELECT sort_id FROM receivers WHERE sort_id IS NOT NULL)")
+    cursor.execute(
+        "SELECT sort_id, box_contents FROM sorts WHERE approved = 1 AND sort_id NOT IN (SELECT sort_id FROM receivers WHERE sort_id IS NOT NULL)")
     sort_options = cursor.fetchall()
     con.close()
     return collection_options, sort_options
+
 
 @app.route('/admin_pending')
 def admin_pending():
@@ -196,18 +219,19 @@ def admin_pending():
                            pending_collections=pending_collections,
                            pending_sorts=pending_sorts,
                            pending_receivers=pending_receivers,
-                           pending_volunteers=pending_volunteers, admin=is_admin(),login=is_login())
+                           pending_volunteers=pending_volunteers, admin=is_admin(), login=is_login())
 
-@app.route('/admin/collections/approve', methods=['GET','POST'])
+
+@app.route('/admin/collections/approve', methods=['GET', 'POST'])
 def approve_collection():
     box_id = request.form.get('box_id')
-    print(box_id)
     con = connect_database(DATABASE)
     cursor = con.cursor()
     cursor.execute("UPDATE collections SET approved = 1 WHERE box_id = ?", (box_id,))
     con.commit()
     con.close()
     return redirect('/admin_pending')
+
 
 @app.route('/admin/collections/reject', methods=['POST'])
 def reject_collection():
@@ -219,6 +243,7 @@ def reject_collection():
     con.close()
     return redirect('/admin_pending')
 
+
 @app.route('/admin/sorts/approve', methods=['POST'])
 def approve_sort():
     sort_id = request.form.get('sort_id')
@@ -228,6 +253,7 @@ def approve_sort():
     con.commit()
     con.close()
     return redirect('/admin_pending')
+
 
 @app.route('/admin/sorts/reject', methods=['POST'])
 def reject_sort():
@@ -239,6 +265,7 @@ def reject_sort():
     con.close()
     return redirect('/admin_pending')
 
+
 @app.route('/admin/receivers/approve', methods=['POST'])
 def approve_receiver():
     sort_id = request.form.get('sort_id')
@@ -248,6 +275,7 @@ def approve_receiver():
     con.commit()
     con.close()
     return redirect('/admin_pending')
+
 
 @app.route('/admin/receivers/reject', methods=['POST'])
 def reject_receiver():
@@ -259,6 +287,7 @@ def reject_receiver():
     con.close()
     return redirect('/admin_pending')
 
+
 @app.route('/admin/volunteers/approve', methods=['POST'])
 def approve_volunteer():
     v_id = request.form.get('v_id')
@@ -268,6 +297,7 @@ def approve_volunteer():
     con.commit()
     con.close()
     return redirect('/admin_pending')
+
 
 @app.route('/admin/volunteers/reject', methods=['POST'])
 def reject_volunteer():

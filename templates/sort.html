@@ -1,62 +1,65 @@
 {% extends "base.html" %}
 {% block pageheading %}
     <div style="padding-left: 10px; font-size: 1.25rem;">
-    Collections <br>
-    Here you will find out what happened to the food rescued (compost, animals or donated). <br>
-    As a volunteer, it is your job to sort the boxes into these categories and log them
-    here so we can keep track of them. <br>
+        Collections <br>
+        Here you will find out what happened to the food rescued (compost, animals or donated). <br>
+        As a volunteer, it is your job to sort the boxes into these categories and log them
+        here so we can keep track of them. <br>
     </div>
 {% endblock %}}
 
 {% block main %}
-<h2 style="text-align: center;">Sorted Food Boxes</h2>
+    <h2 style="text-align: center;">Sorted Food Boxes</h2>
 
-<table>
-    <thead>
+    <table>
+        <thead>
         <tr>
             <th>Origin Collection ID</th>
             <th>Box Type</th>
             <th>Contents</th>
             <th>Weight (kg)</th>
         </tr>
-    </thead>
-    <tbody>
+        </thead>
+        <tbody>
         {% for box in sorted_boxes %}
-        <tr>
-            <td>{{ box[4] }}</td>
-            <td>{{ box[1] }}</td>
-            <td>{{ box[2] }}</td>
-            <td>{{ box[3] }}</td>
-        </tr>
+            <tr>
+                <td>{{ box[4] }}</td>
+                <td>{{ box[1] }}</td>
+                <td>{{ box[2] }}</td>
+                <td>{{ box[3] }}</td>
+            </tr>
         {% endfor %}
-    </tbody>
-</table>
-<br><br><br>
+        </tbody>
+    </table>
+    <br><br><br>
 
-{% if can_add %}
-<div class="kaibosh-container" style="margin: auto;">
-    <form method="POST">
-        <h2>Add Sorted Box</h2>
-        <select class="kaibosh-input" name="box_type" required>
-            <option value="">Select Box Type</option>
-            <option value="Edible">Edible</option>
-            <option value="Animals">Animals</option>
-            <option value="Compost">Compost</option>
-        </select>
-        <input type="text" class="kaibosh-input" name="box_contents" placeholder="Mixed/Single Item (Name of Items)" required>
-        <input type="number" step=".01" min="0" class="kaibosh-input" name="box_weight" placeholder="Weight (kg)" required>
+    {% if login %}
+        <div class="kaibosh-container" style="margin: auto;">
+            <form method="POST">
+                <h2>Add Sorted Box</h2>
+                <select class="kaibosh-input" name="box_type" required>
+                    <option value="">Select Box Type</option>
+                    <option value="Edible">Edible</option>
+                    <option value="Animals">Animals</option>
+                    <option value="Compost">Compost</option>
+                </select>
+                <input type="text" class="kaibosh-input" name="box_contents"
+                       placeholder="Mixed/Single Item (Name of Items)" required>
+                <input type="number" step=".01" min="0" class="kaibosh-input" name="box_weight"
+                       placeholder="Weight (kg)" required>
 
-        <select name="collected_box_id" class="kaibosh-input" required>
-            <option disabled selected>Select Origin Collection Box</option>
-            {% for box in collection_options %}
-                <option value="{{ box[0] }}">ID {{ box[0] }} - {{ box[1] }} required </option>
-            {% endfor %}
-        </select>
+                <select name="collected_box_id" class="kaibosh-input" required>
+                    <option value="" disabled selected>Select Origin Collection Box</option>
+                    {% for box in collection_options %}
+                        <option value="{{ box[0] }}">ID {{ box[0] }} - {{ box[1] }}</option>
+                    {% endfor %}
+                </select>
 
-        <button type="submit" class="kaibosh-button">Add Box</button>
-    </form>
-</div>
-<br>
-{% endif %}
+
+                <button type="submit" class="kaibosh-button">Add Box</button>
+            </form>
+        </div>
+        <br>
+    {% endif %}
 
 {% endblock %}

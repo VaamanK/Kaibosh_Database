@@ -9,44 +9,44 @@
 {% endblock %}
 
 {% block main %}
-<h2 style="text-align: center;">Food Donations</h2>
+    <h2 style="text-align: center;">Food Donations</h2>
 
-<table>
-    <thead>
-        <tr>
-            <th>Donation Contents</th>
-            <th>Receiver Name</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for donation in donation_records %}
-        <tr>
-            <td>{{ donation[0] }}</td>
-            <td>{{ donation[1] }}</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
-<br><br><br>
-
-{% if can_add %}
-<div class="kaibosh-container" style="margin: auto;">
-    <form method="POST">
-        <h2>Add Donation</h2>
-        <input type="text" class="kaibosh-input" name="donation_contents" placeholder="Donation Contents" required>
-        <input type="text" class="kaibosh-input" name="receiver_name" placeholder="Receiver Name" required>
-
-        <select name="sort_id" class="kaibosh-input" required>
-            <option disabled selected>Select Sorted Box</option>
-            {% for sort in sort_options %}
-                <option value="{{ sort[0] }}">ID {{ sort[0] }} - {{ sort[1] }}</option>
+    <table>
+        <thead>
+            <tr>
+                <th>Donation Contents</th>
+                <th>Receiver Name</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for donation in donation_records %}
+            <tr>
+                <td>{{ donation[0] }}</td>
+                <td>{{ donation[1] }}</td>
+            </tr>
             {% endfor %}
-        </select>
+        </tbody>
+    </table>
+    <br><br><br>
 
-        <button type="submit" class="kaibosh-button">Add Donation</button>
-    </form>
-</div>
-<br>
-{% endif %}
+    {% if login %}
+    <div class="kaibosh-container" style="margin: auto;">
+        <form method="POST">
+            <h2>Add Donation</h2>
+            <input type="text" class="kaibosh-input" name="donation_contents" placeholder="Donation Contents" required>
+            <input type="text" class="kaibosh-input" name="receiver_name" placeholder="Receiver Name" required>
 
-{% endblock %}
+            <select name="sort_id" class="kaibosh-input" required>
+                <option disabled selected>Select Sorted Box</option>
+                {% for sort in sort_options %}
+                    <option value="{{ sort[0] }}">ID {{ sort[0] }} - {{ sort[1] }}</option>
+                {% endfor %}
+            </select>
+
+            <button type="submit" class="kaibosh-button">Add Donation</button>
+        </form>
+    </div>
+    <br>
+    {% endif %}
+
+    {% endblock %}
