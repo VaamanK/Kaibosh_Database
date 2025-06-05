@@ -1,38 +1,56 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <!-- Character encoding for the document -->
     <meta charset="utf-8">
+    <!-- Page title block, default is "Kaibosh" -->
     <title>{% block title %}Kaibosh{% endblock %}</title>
+    <!-- Responsive viewport for mobile devices -->
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- Google Fonts: Manrope family with various weights -->
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200;400;600;800&display=swap" rel="stylesheet">
+    <!-- Normalize.css to reset browser default styles for consistency -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.css"/>
+    <!-- Link to local CSS file 'Kaibosh.css' served from static folder -->
     <link href="{{ url_for('static', filename='Kaibosh.css') }}" rel="stylesheet">
 </head>
 <body>
+    <!-- Navigation bar with links to main sections -->
     <nav>
         <a href="/">Home</a>
         <a href="/collections">Collections</a>
         <a href="/sort">Sorts</a>
         <a href="/receivers">Receivers</a>
-        {% if login==True %}
+
+        <!-- Conditional display of logout link if user is logged in -->
+        {% if login == True %}
             <a href="/logout">Logout</a>
         {% else %}
+            <!-- No logout link if not logged in -->
         {% endif %}
-        {% if login==False %}
+
+        <!-- Conditional display of signup and login links if user is NOT logged in -->
+        {% if login == False %}
             <a href="/signup">Signup</a>
             <a href="/login">Login</a>
         {% else %}
+            <!-- No signup/login links if already logged in -->
         {% endif %}
-        {% if admin%}
+
+        <!-- Conditional display of admin link if user is an admin -->
+        {% if admin %}
             <a href="/admin_pending">Admin</a>
         {% else %}
+            <!-- No admin link if not admin -->
         {% endif %}
     </nav>
 
+    <!-- Header section for page-specific heading -->
     <header>
         {% block pageheading %}{% endblock %}
     </header>
 
+    <!-- Main content area to be filled by child templates -->
     <main>
         {% block main %}{% endblock %}
     </main>

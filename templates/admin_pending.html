@@ -4,85 +4,121 @@
 
 {% block main %}
 
-<!-- Pending Volunteers -->
+<!-- Section: Pending Volunteer Accounts -->
 <h2>Pending Volunteer Accounts</h2>
 {% if pending_volunteers %}
     {% for v in pending_volunteers %}
+        <!-- Form to approve a volunteer account -->
         <form method="post" action="{{ url_for('approve_volunteer') }}" style="display: flex; gap: 10px;">
+            <!-- Hidden input to pass volunteer ID -->
             <input type="hidden" name="v_id" value="{{ v.v_id }}">
+            <!-- Disabled input showing volunteer name and email -->
             <input class="kaibosh-input" type="text" value="{{ v.v_fname }} {{ v.v_lname }} ({{ v.v_email }})" disabled>
+            <!-- Submit button to approve -->
             <button class="kaibosh-button" type="submit">Approve</button>
         </form>
+        <!-- Form to reject/delete a volunteer account -->
         <form method="post" action="{{ url_for('reject_volunteer') }}" style="display: flex; gap: 10px;">
+            <!-- Hidden input to pass volunteer ID -->
             <input type="hidden" name="v_id" value="{{ v.v_id }}">
+            <!-- Disabled input showing volunteer name and email -->
             <input class="kaibosh-input" type="text" value="{{ v.v_fname }} {{ v.v_lname }} ({{ v.v_email }})" disabled>
-            <button class="kaibosh-button" submit" onclick="return confirm('Are you sure you want to reject/delete this item?');">Reject</button>
+            <!-- Submit button to reject with confirmation popup -->
+            <button class="kaibosh-button" type="submit" onclick="return confirm('Are you sure you want to reject/delete this item?');">Reject</button>
         </form>
     {% endfor %}
 {% else %}
+    <!-- Message if no pending volunteers -->
     <p>No pending volunteer accounts.</p>
 {% endif %}
 
 <br><br>
 
-<!-- Pending Collections -->
+<!-- Section: Pending Collections -->
 <h2>Pending Collections</h2>
 {% if pending_collections %}
     {% for c in pending_collections %}
+        <!-- Form to approve a collection entry -->
         <form method="post" action="{{ url_for('approve_collection') }}" style="display: flex; gap: 10px;">
+            <!-- Hidden input to pass collection box ID -->
             <input type="hidden" name="box_id" value="{{ c.box_id }}">
+            <!-- Disabled input showing collection details -->
             <input class="kaibosh-input" type="text" value="Contents: {{ c.collected_box_contents }} | Weight: {{ c.collected_box_weight }} | Donor: {{ c.donor }}" disabled>
+            <!-- Submit button to approve -->
             <button class="kaibosh-button" type="submit">Approve</button>
         </form>
+        <!-- Form to reject/delete a collection entry -->
         <form method="post" action="{{ url_for('reject_collection') }}" style="display: flex; gap: 10px;">
+            <!-- Hidden input to pass collection box ID -->
             <input type="hidden" name="box_id" value="{{ c.box_id }}">
+            <!-- Disabled input showing collection details -->
             <input class="kaibosh-input" type="text" value="Contents: {{ c.collected_box_contents }} | Weight: {{ c.collected_box_weight }} | Donor: {{ c.donor }}" disabled>
-             <button class="kaibosh-button" type="submit" onclick="return confirm('Are you sure you want to reject/delete this item?');">Reject</button>
+            <!-- Submit button to reject with confirmation popup -->
+            <button class="kaibosh-button" type="submit" onclick="return confirm('Are you sure you want to reject/delete this item?');">Reject</button>
         </form>
     {% endfor %}
 {% else %}
+    <!-- Message if no pending collections -->
     <p>No pending collections.</p>
 {% endif %}
 
 <br><br>
 
-<!-- Pending Sorts -->
+<!-- Section: Pending Sorts -->
 <h2>Pending Sorts</h2>
 {% if pending_sorts %}
     {% for s in pending_sorts %}
+        <!-- Form to approve a sort entry -->
         <form method="post" action="{{ url_for('approve_sort') }}" style="display: flex; gap: 10px;">
+            <!-- Hidden input to pass sort ID -->
             <input type="hidden" name="sort_id" value="{{ s.sort_id }}">
+            <!-- Disabled input showing sort details -->
             <input class="kaibosh-input" type="text" value="Type: {{ s.box_type }} | Contents: {{ s.box_contents }} | Weight: {{ s.box_weight }}" disabled>
+            <!-- Submit button to approve -->
             <button class="kaibosh-button" type="submit">Approve</button>
         </form>
+        <!-- Form to reject/delete a sort entry -->
         <form method="post" action="{{ url_for('reject_sort') }}" style="display: flex; gap: 10px;">
+            <!-- Hidden input to pass sort ID -->
             <input type="hidden" name="sort_id" value="{{ s.sort_id }}">
+            <!-- Disabled input showing sort details -->
             <input class="kaibosh-input" type="text" value="Type: {{ s.box_type }} | Contents: {{ s.box_contents }} | Weight: {{ s.box_weight }}" disabled>
-             <button class="kaibosh-button" type="submit" onclick="return confirm('Are you sure you want to reject/delete this item?');">Reject</button>
+            <!-- Submit button to reject with confirmation popup -->
+            <button class="kaibosh-button" type="submit" onclick="return confirm('Are you sure you want to reject/delete this item?');">Reject</button>
         </form>
     {% endfor %}
 {% else %}
+    <!-- Message if no pending sorts -->
     <p>No pending sorts.</p>
 {% endif %}
 
 <br><br>
 
-<!-- Pending Receivers -->
+<!-- Section: Pending Receivers -->
 <h2>Pending Receivers</h2>
 {% if pending_receivers %}
     {% for r in pending_receivers %}
+        <!-- Form to approve a receiver entry -->
         <form method="post" action="{{ url_for('approve_receiver') }}" style="display: flex; gap: 10px;">
+            <!-- Hidden input to pass related sort ID -->
             <input type="hidden" name="sort_id" value="{{ r.sort_id }}">
+            <!-- Disabled input showing receiver details -->
             <input class="kaibosh-input" type="text" value="Contents: {{ r.donation_contents }} | Receiver: {{ r.receiver_name }} | Sort ID: {{ r.sort_id }}" disabled>
+            <!-- Submit button to approve -->
             <button class="kaibosh-button" type="submit">Approve</button>
         </form>
+        <!-- Form to reject/delete a receiver entry -->
         <form method="post" action="{{ url_for('reject_receiver') }}" style="display: flex; gap: 10px;">
+            <!-- Hidden input to pass related sort ID -->
             <input type="hidden" name="sort_id" value="{{ r.sort_id }}">
+            <!-- Disabled input showing receiver details -->
             <input class="kaibosh-input" type="text" value="Contents: {{ r.donation_contents }} | Receiver: {{ r.receiver_name }} | Sort ID: {{ r.sort_id }}" disabled>
-             <button class="kaibosh-button" type="submit" onclick="return confirm('Are you sure you want to reject/delete this item?');">Reject</button>
+            <!-- Submit button to reject with confirmation popup -->
+            <button class="kaibosh-button" type="submit" onclick="return confirm('Are you sure you want to reject/delete this item?');">Reject</button>
         </form>
     {% endfor %}
 {% else %}
+    <!-- Message if no pending receivers -->
     <p>No pending receivers.</p>
 {% endif %}
 

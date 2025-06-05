@@ -1,7 +1,17 @@
 {% extends "base.html" %}
 
+<!--
+  Page heading block sets the title of this page as "Login".
+-->
 {% block pageheading %}Login{% endblock %}
 
+<!--
+  Main block contains the login form:
+  - Email input field (required)
+  - Password input field (required)
+  - Submit button to log in
+  Below the form, a link to the signup page is provided for new users.
+-->
 {% block main %}
     <form method="post">
         <div class="kaibosh-container">

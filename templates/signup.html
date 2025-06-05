@@ -1,19 +1,28 @@
 {% extends "base.html" %}
 
-{% block pageheading %} Signup {% endblock %}
+{% block pageheading %}Signup{% endblock %}
 
 {% block main %}
+    <!-- Signup form for new volunteers -->
     <form method="post">
         <div class="kaibosh-container">
+            <!-- First name input -->
             <input type="text" class="kaibosh-input" placeholder="First Name" name="volunteer_fname" required />
+            <!-- Last name input -->
             <input type="text" class="kaibosh-input" placeholder="Last Name" name="volunteer_lname" required />
+            <!-- Email input -->
             <input type="email" class="kaibosh-input" placeholder="Email" name="volunteer_email" required />
-            <input type="password" class="kaibosh-input" placeholder="Password must be 8 characters" name="volunteer_password" required />
+            <!-- Password input with minimum 8 characters -->
+            <input type="password" class="kaibosh-input" placeholder="Password must be at least 8 characters" name="volunteer_password" required />
+            <!-- Confirm password input -->
             <input type="password" class="kaibosh-input" placeholder="Both Passwords must match" name="volunteer_password2" required />
-            <button class="kaibosh-button">Sign up</button>
+            <!-- Submit button -->
+            <button class="kaibosh-button">Sign Up</button>
         </div>
     </form>
-    <br>
-    <br>
-    <p> Already have an account? <a href="/login"> Log In!</a></p>
+
+    <br><br>
+
+    <!-- Link to login page for existing users -->
+    <p>Already have an account? <a href="/login">Log In!</a></p>
 {% endblock %}

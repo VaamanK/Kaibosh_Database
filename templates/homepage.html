@@ -1,11 +1,19 @@
 {% extends "base.html" %}
 
+<!--
+  The header section defines the page heading block,
+  displaying a welcome message on the home page.
+-->
 <header>
     {% block pageheading %}
     Welcome to Kaibosh home page.
     {% endblock %}
 </header>
 
+<!--
+  The main section defines the main content block,
+  briefly explaining the purpose of the Kaibosh website.
+-->
 <main>
     {% block main %}
         In this website, you can track the statistics of everything Kaibosh does.
@@ -14,6 +22,3 @@
         Kaibosh does it all, and you can track it here!
     {% endblock %}
 </main>
-
-
-

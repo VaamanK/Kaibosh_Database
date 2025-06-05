@@ -1,53 +1,65 @@
 {% extends "base.html" %}
+
 {% block pageheading %}
+    <!-- Page heading with instructions for volunteers on sorting -->
     <div style="padding-left: 10px; font-size: 1.25rem;">
         Collections <br>
         Here you will find out what happened to the food rescued (compost, animals or donated). <br>
         As a volunteer, it is your job to sort the boxes into these categories and log them
         here so we can keep track of them. <br>
     </div>
-{% endblock %}}
+{% endblock %}
 
 {% block main %}
     <h2 style="text-align: center;">Sorted Food Boxes</h2>
 
+    <!-- Table showing sorted food boxes with origin, type, contents, and weight -->
     <table>
         <thead>
-        <tr>
-            <th>Origin Collection ID</th>
-            <th>Box Type</th>
-            <th>Contents</th>
-            <th>Weight (kg)</th>
-        </tr>
+            <tr>
+                <th>Origin Collection ID</th>
+                <th>Box Type</th>
+                <th>Contents</th>
+                <th>Weight (kg)</th>
+            </tr>
         </thead>
         <tbody>
-        {% for box in sorted_boxes %}
+            {% for box in sorted_boxes %}
             <tr>
-                <td>{{ box[4] }}</td>
-                <td>{{ box[1] }}</td>
-                <td>{{ box[2] }}</td>
-                <td>{{ box[3] }}</td>
+                <td>{{ box[4] }}</td> <!-- Origin collection ID -->
+                <td>{{ box[1] }}</td> <!-- Box type -->
+                <td>{{ box[2] }}</td> <!-- Contents -->
+                <td>{{ box[3] }}</td> <!-- Weight -->
             </tr>
-        {% endfor %}
+            {% endfor %}
         </tbody>
     </table>
+
     <br><br><br>
 
     {% if login %}
+        <!-- Form for volunteers to add a new sorted box -->
         <div class="kaibosh-container" style="margin: auto;">
             <form method="POST">
                 <h2>Add Sorted Box</h2>
+
+                <!-- Dropdown to select box type -->
                 <select class="kaibosh-input" name="box_type" required>
                     <option value="">Select Box Type</option>
                     <option value="Edible">Edible</option>
                     <option value="Animals">Animals</option>
                     <option value="Compost">Compost</option>
                 </select>
+
+                <!-- Input for box contents -->
                 <input type="text" class="kaibosh-input" name="box_contents"
                        placeholder="Mixed/Single Item (Name of Items)" required>
+
+                <!-- Input for box weight -->
                 <input type="number" step=".01" min="0" class="kaibosh-input" name="box_weight"
                        placeholder="Weight (kg)" required>
 
+                <!-- Dropdown to select origin collection box -->
                 <select name="collected_box_id" class="kaibosh-input" required>
                     <option value="" disabled selected>Select Origin Collection Box</option>
                     {% for box in collection_options %}
@@ -55,7 +67,7 @@
                     {% endfor %}
                 </select>
 
-
+                <!-- Submit button -->
                 <button type="submit" class="kaibosh-button">Add Box</button>
             </form>
         </div>

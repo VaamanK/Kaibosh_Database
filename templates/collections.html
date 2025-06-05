@@ -1,5 +1,7 @@
 {% extends "base.html" %}
+
 {% block pageheading %}
+<!-- Page heading with instructions for volunteers on how to fill the collections -->
 <div style="padding-left: 10px; font-size: 1.25rem;">
     Collections <br>
     As a volunteer, it is your job to input what you have collected here
@@ -12,40 +14,49 @@
 {% endblock %}
 
 {% block main %}
+    <!-- Main content area for displaying collected food boxes -->
     <h2 style="text-align: center;">Collected Food Boxes</h2>
 
+    <!-- Table listing existing collected boxes -->
     <table>
         <thead>
             <tr>
-                <th>Box ID</th>
-                <th>Content</th>
-                <th>Weight (kg)</th>
-                <th>Donor</th>
+                <th>Box ID</th> <!-- Unique identifier for each box -->
+                <th>Content</th> <!-- Description of what is in the box -->
+                <th>Weight (kg)</th> <!-- Weight of the box in kilograms -->
+                <th>Donor</th> <!-- Location or donor who rescued the food -->
             </tr>
         </thead>
         <tbody>
+            <!-- Loop through each box in the boxes list passed from the backend -->
             {% for box in boxes %}
             <tr>
-                <td>{{ box[0] }}</td>
-                <td>{{ box[1] }}</td>
-                <td>{{ box[2] }}</td>
-                <td>{{ box[3] }}</td>
+                <td>{{ box[0] }}</td> <!-- box_id -->
+                <td>{{ box[1] }}</td> <!-- collected_box_contents -->
+                <td>{{ box[2] }}</td> <!-- collected_box_weight -->
+                <td>{{ box[3] }}</td> <!-- donor -->
             </tr>
             {% endfor %}
         </tbody>
     </table>
-<br><br><br>
+
+    <br><br><br>
+
+    <!-- Show the form for adding a new box only if the user is logged in -->
     {% if login %}
     <div class="kaibosh-container" style="margin: auto;">
         <form method="POST">
             <h2>Add New Box</h2>
+            <!-- Input for the contents of the box; required field -->
             <input type="text" class="kaibosh-input" name="collected_box_contents" placeholder="Box Contents" required>
+            <!-- Input for the weight of the box; number type with decimal step and min value 0; required -->
             <input type="number" step=".01" min="0" class="kaibosh-input" name="collected_box_weight" placeholder="Weight (kg)" required>
+            <!-- Input for donor/rescue location; required -->
             <input type="text" class="kaibosh-input" name="donor" placeholder="Rescue location" required>
+            <!-- Submit button to add the new box -->
             <button type="submit" class="kaibosh-button">Add Box</button>
         </form>
     </div>
     <br>
     {% endif %}
-
 {% endblock %}

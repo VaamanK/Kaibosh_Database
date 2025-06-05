@@ -1,5 +1,10 @@
 {% extends "base.html" %}
 
+<!--
+  Page heading block explaining the purpose of this page:
+  Tracks donated food and receivers.
+  Volunteers use this page to log where food donations go.
+-->
 {% block pageheading %}
 <div style="padding-left: 10px; font-size: 1.25rem;">
     Donations <br>
@@ -8,6 +13,16 @@
 </div>
 {% endblock %}
 
+<!--
+  Main block:
+  - Displays a centered heading "Food Donations".
+  - Shows a table listing each donation's contents and the receiver's name.
+  - If logged in, shows a form to add a new donation:
+    * Text input for donation contents.
+    * Text input for receiver name.
+    * Dropdown to select the sorted box (linked by sort_id).
+    * Submit button to add the donation.
+-->
 {% block main %}
     <h2 style="text-align: center;">Food Donations</h2>
 
@@ -37,7 +52,7 @@
             <input type="text" class="kaibosh-input" name="receiver_name" placeholder="Receiver Name" required>
 
             <select name="sort_id" class="kaibosh-input" required>
-                <option disabled selected>Select Sorted Box</option>
+                <option value="" disabled selected>Select Sorted Box</option>
                 {% for sort in sort_options %}
                     <option value="{{ sort[0] }}">ID {{ sort[0] }} - {{ sort[1] }}</option>
                 {% endfor %}
@@ -49,4 +64,4 @@
     <br>
     {% endif %}
 
-    {% endblock %}
+{% endblock %}
