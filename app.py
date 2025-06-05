@@ -3,113 +3,121 @@ import sqlite3
 from sqlite3 import Error
 from flask_bcrypt import Bcrypt
 
-
-
 DATABASE = "kaibosh_table"
 
 app = Flask(__name__)
 app.secret_key = 'hhnatk'
 bcrypt = Bcrypt(app)
 
+
+
+def insert_admin():
+    con = sqlite3.connect(DATABASE)
+    cursor = con.cursor()
+    admin_email = "admin@kaibosh.nz"
+    admin_password = "Kaibosh123"
+    role = 1
+    approved = 1
+    cursor.execute("SELECT * FROM signup WHERE v_email = ?", (admin_email,))
+    if cursor.fetchone():
+        print("Admin already exists.")
+    else:
+        hashed_password = bcrypt.generate_password_hash(admin_password)
+        cursor.execute("INSERT INTO signup (v_email, v_password, role, approved) VALUES (?, ?, ?, ?)",(admin_email, hashed_password, role, approved))
+        con.commit()
+        print("Admin account created.")
+    con.close()
+
+insert_admin()
+
 @app.context_processor
 def inject_user_status():
     return dict(admin=is_admin(), login=is_login())
 
-
 def connect_database(db_file):
     try:
         connection = sqlite3.connect(db_file)
+        connection.row_factory = sqlite3.Row
         return connection
     except Error:
-        print("An error has occured when connecting to the database.")
+        print("An error occurred when connecting to the database.")
 
 
 def is_admin():
-    if session.get('admin') == 1:
-        return True
-    else:
-        return False
-
+    return session.get('admin') == 1
 
 def is_login():
-    print(session.get('v_email'))
-    if session.get('v_email') == None:
-        return False
-    else:
-        return True
+    return session.get('v_email') is not None
 
-
-
-@app.route('/', methods=['GET', 'POST'])
+@app.route('/')
 def homepage():
-    return render_template('homepage.html', admin=is_admin(), login=is_login())
-
+    return render_template('homepage.html')
 
 @app.route('/collections', methods=['GET', 'POST'])
 def collections():
     con = connect_database(DATABASE)
     cursor = con.cursor()
 
-    if request.method == 'POST' and session.get('user_email'):
+    if request.method == 'POST' and session.get('v_email'):
         content = request.form.get('collected_box_contents').strip()
         weight = request.form.get('collected_box_weight')
         donor = request.form.get('donor').strip()
-
-        insert_query = 'INSERT INTO collections (collected_box_contents, collected_box_weight, donor, approved) VALUES (?, ?, ?, 0)'
-        cursor.execute(insert_query, (content, weight, donor))
+        cursor.execute('INSERT INTO collections (collected_box_contents, collected_box_weight, donor, approved) VALUES (?, ?, ?, 0)',
+                       (content, weight, donor))
         con.commit()
 
-    cursor.execute("SELECT * FROM collections WHERE approved = 1")
+    if is_admin():
+        cursor.execute("SELECT * FROM collections")
+    else:
+        cursor.execute("SELECT * FROM collections WHERE approved = 1")
     boxes = cursor.fetchall()
     con.close()
-    return render_template('collections.html', boxes=boxes, admin=is_admin(), login=is_login())
-
+    return render_template('collections.html', boxes=boxes)
 
 @app.route('/sort', methods=['GET', 'POST'])
 def sort():
     con = connect_database(DATABASE)
     cursor = con.cursor()
 
-    if request.method == 'POST' and session.get('user_email'):
+    if request.method == 'POST' and session.get('v_email'):
         box_type = request.form.get('box_type')
         box_contents = request.form.get('box_contents')
         box_weight = request.form.get('box_weight')
         collected_box_id = request.form.get('collected_box_id')
-
-        insert_query = 'INSERT INTO sorts (box_type, box_contents, box_weight, collected_box_id, approved) VALUES (?, ?, ?, ?, 0)'
-        cursor.execute(insert_query, (box_type, box_contents, box_weight, collected_box_id))
+        cursor.execute('INSERT INTO sorts (box_type, box_contents, box_weight, collected_box_id, approved) VALUES (?, ?, ?, ?, 0)',
+                       (box_type, box_contents, box_weight, collected_box_id))
         con.commit()
 
-    cursor.execute("SELECT * FROM sorts WHERE approved = 1")
+    if is_admin():
+        cursor.execute("SELECT * FROM sorts")
+    else:
+        cursor.execute("SELECT * FROM sorts WHERE approved = 1")
     sorted_boxes = cursor.fetchall()
     collection_options, _ = get_dropdown_data()
-
     con.close()
-    return render_template("sort.html", sorted_boxes=sorted_boxes, admin=is_admin(), login=is_login(), collection_options=collection_options)
-
+    return render_template("sort.html", sorted_boxes=sorted_boxes, collection_options=collection_options)
 
 @app.route('/receivers', methods=['GET', 'POST'])
 def receivers():
     con = connect_database(DATABASE)
     cursor = con.cursor()
 
-    if request.method == 'POST' and session.get('user_email'):
+    if request.method == 'POST' and session.get('v_email'):
         donation_contents = request.form.get('donation_contents')
         receiver_name = request.form.get('receiver_name')
         sort_id = request.form.get('sort_id')
-
-        insert_query = 'INSERT INTO receivers (donation_contents, receiver_name, sort_id, approved) VALUES (?, ?, ?, 0)'
-        cursor.execute(insert_query, (donation_contents, receiver_name, sort_id))
+        cursor.execute('INSERT INTO receivers (donation_contents, receiver_name, sort_id, approved) VALUES (?, ?, ?, 0)',
+                       (donation_contents, receiver_name, sort_id))
         con.commit()
 
-    cursor.execute("SELECT donation_contents, receiver_name FROM receivers WHERE approved = 1")
+    if is_admin():
+        cursor.execute("SELECT donation_contents, receiver_name FROM receivers")
+    else:
+        cursor.execute("SELECT donation_contents, receiver_name FROM receivers WHERE approved = 1")
     donation_records = cursor.fetchall()
-    _ ,sort_options = get_dropdown_data()
+    _, sort_options = get_dropdown_data()
     con.close()
-
-    return render_template("receivers.html", donation_records=donation_records, admin=is_admin(), login=is_login(),
-                           sort_options=sort_options)
-
+    return render_template("receivers.html", donation_records=donation_records, sort_options=sort_options)
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -117,50 +125,39 @@ def login():
         email = request.form.get('volunteer_email').lower().strip()
         password = request.form.get('volunteer_password')
 
-        query = "SELECT v_password, role, approved FROM signup WHERE v_email = ?"
         con = connect_database(DATABASE)
         cursor = con.cursor()
-        cursor.execute(query, (email,))
+        cursor.execute("SELECT v_password, role, approved FROM signup WHERE v_email = ?", (email,))
         user_info = cursor.fetchone()
         con.close()
 
         if not user_info:
-            return redirect("/login?error=password-is-wrong")
+            return redirect("/login?error=email-or-password-is-wrong")
 
-        v_password = user_info[0]
-        approved = user_info[2]
-        admin = user_info[1]
-
-        if admin == 1:
-            print(admin)
-            return redirect("/admin_pending")
-
+        v_password, role, approved = user_info
 
         if not bcrypt.check_password_hash(v_password, password):
             return redirect('/login?error=email-or-password-is-wrong')
 
+        if approved == 0:
+            return redirect("/login?error=account-not-approved")
 
-        if password != v_password:
-            return redirect("/login?error=wrong-password")
+        session['v_email'] = email
+        session['approved'] = approved
+        session['admin'] = role
 
-        else:
-            session['user_email'] = email
-            session['approved'] = approved
-            session['admin'] = admin
-            if session['approved'] == 0:
-                return redirect("/login?error=account-not-approved")
-            return redirect("/")
+        if role == 1:
+            return redirect("/admin_pending")
+        return redirect("/")
 
-    return render_template('login.html', admin=is_admin(), login=is_login())
-
+    return render_template('login.html')
 
 @app.route('/logout')
 def logout():
     session.clear()
     return redirect('/')
 
-
-@app.route('/signup', methods=['POST', 'GET'])
+@app.route('/signup', methods=['GET', 'POST'])
 def signup():
     if request.method == 'POST':
         fname = request.form.get('volunteer_fname').title().strip()
@@ -168,55 +165,32 @@ def signup():
         email = request.form.get('volunteer_email').lower().strip()
         password = request.form.get('volunteer_password')
         password2 = request.form.get('volunteer_password2')
-        admin_code = request.form.get('admin_code')
 
         if password != password2:
             return redirect("/signup?error=passwords-do-not-match")
-
         if len(password) < 8:
             return redirect("/signup?error=password-must-be-8-characters")
 
-        hashed_password = bcrypt.generate_password_hash(password)
-
-        if admin_code == '3033':
-            is_admin = 1
-        else:
-            is_admin = 0
+        hashed_pw = bcrypt.generate_password_hash(password)
         con = connect_database(DATABASE)
         cursor = con.cursor()
-
-
-        query = "SELECT * FROM signup WHERE v_email = ?"
-        cursor.execute(query, (email,))
+        cursor.execute("SELECT * FROM signup WHERE v_email = ?", (email,))
         if cursor.fetchone():
             return redirect("/signup?error=email-already-registered")
 
-        if is_admin ==1:
-            role = 1
-            query_insert = "INSERT INTO signup (v_fname, v_lname, v_email, v_password, role) VALUES (?, ?, ?, ?, ?)"
-            cursor.execute(query_insert, (fname, lname, email, hashed_password, is_admin))
-            con.commit()
-            con.close()
-            return redirect("/login?success=account-creation-pending")
-        else:
-            query_insert = "INSERT INTO signup (v_fname, v_lname, v_email, v_password) VALUES (?, ?, ?, ?)"
-            cursor.execute(query_insert, (fname, lname, email, hashed_password))
-            con.commit()
-            con.close()
-            return redirect("/login?success=account-creation-pending")
-
-
+        cursor.execute("INSERT INTO signup (v_fname, v_lname, v_email, v_password) VALUES (?, ?, ?, ?)",
+                       (fname, lname, email, hashed_pw))
+        con.commit()
+        con.close()
+        return redirect("/signup?success=account-creation-pending")
     return render_template('signup.html')
-
 
 def get_dropdown_data():
     con = connect_database(DATABASE)
     cursor = con.cursor()
-    cursor.execute(
-        "SELECT box_id, collected_box_contents FROM collections WHERE approved = 1 AND box_id NOT IN (SELECT collected_box_id FROM sorts WHERE collected_box_id IS NOT NULL)")
+    cursor.execute("SELECT box_id, collected_box_contents FROM collections WHERE approved = 1 AND box_id NOT IN (SELECT collected_box_id FROM sorts WHERE collected_box_id IS NOT NULL)")
     collection_options = cursor.fetchall()
-    cursor.execute(
-        "SELECT sort_id, box_contents FROM sorts WHERE approved = 1 AND sort_id NOT IN (SELECT sort_id FROM receivers WHERE sort_id IS NOT NULL)")
+    cursor.execute("SELECT sort_id, box_contents FROM sorts WHERE approved = 1 AND sort_id NOT IN (SELECT sort_id FROM receivers WHERE sort_id IS NOT NULL)")
     sort_options = cursor.fetchall()
     con.close()
     return collection_options, sort_options
