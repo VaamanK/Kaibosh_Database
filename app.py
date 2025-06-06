@@ -267,8 +267,8 @@ def signup():
                        (fname, lname, email, hashed_pw))
         con.commit()
         con.close()
-        # Redirect to signup page with success message that approval is pending.
-        return redirect("/signup?success=account-creation-pending")
+        # Redirect to login page with success message that approval is pending.
+        return redirect("/login?success=account-creation-pending")
     # If GET request, render signup page.
     return render_template('signup.html')
 
