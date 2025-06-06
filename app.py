@@ -242,6 +242,9 @@ def signup():
         password2 = request.form.get('volunteer_password2')
         # Get all the information from the form to here.
 
+        if "." not in email or "@" not in email:
+            # Email has wrong format, redirect with error.
+            return redirect("/signup?error=email-format-error")
         if password != password2:
             # Passwords don't match, redirect with error.
             return redirect("/signup?error=passwords-do-not-match")
